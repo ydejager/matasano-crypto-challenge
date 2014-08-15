@@ -8,11 +8,11 @@
     <ProjectGuid>{1ff70e93-e6cb-496a-9bf6-94607d250d19}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>MatsanoCryptoChallengo</RootNamespace>
-    <AssemblyName>MatsanoCryptoChallengo</AssemblyName>
+    <AssemblyName>MatasanoCryptoChallengo</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
-    <Name>MatsanoCryptoChallenge</Name>
+    <Name>MatasanoCryptoChallenge</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,8 +47,9 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hex.fs" />
+    <Compile Include="Base64.fs" />
     <Compile Include="Program.fs" />
-    <None Include="App.config" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MatsanoCryptoChallenge", "MatasanoCryptoChallenge\MatsanoCryptoChallenge.fsproj", "{1FF70E93-E6CB-496A-9BF6-94607D250D19}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MatasanoCryptoChallenge", "MatasanoCryptoChallenge\MatasanoCryptoChallenge.fsproj", "{1FF70E93-E6CB-496A-9BF6-94607D250D19}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
