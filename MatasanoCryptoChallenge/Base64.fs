@@ -1,4 +1,5 @@
 ﻿module Base64
+    open System
 
     let base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
     
@@ -25,5 +26,8 @@
                 ] 
             | [] -> []
         
-        convertBlock data
-            |> List.map (fun b -> base64Chars.[(int b)])
+        let chars =
+            convertBlock data
+                |> List.map (fun b -> base64Chars.[(int b)])
+
+        String.Concat(Array.ofList(chars))
