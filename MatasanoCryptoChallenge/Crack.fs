@@ -27,5 +27,17 @@
 
     let crackXoredText (maxkeylen: int) (input: byte seq) = crackText xor maxkeylen input
 
-    let hammingDist (bs1: byte list) (bs2: byte list) =
-        0
+    let hammingDist (bs1: byte seq) (bs2: byte seq) =
+        let countBits (b: byte) =
+            let rec f b =
+                match b with
+                | 0uy -> 0
+                | b -> 1 + (f (b &&& (b - 1uy)))
+            f b
+
+        let hd (b1:byte) (b2:byte) =
+            countBits (b1 ^^^ b2)
+
+        Seq.zip bs1 bs2
+            |> Seq.map (fun (b1, b2) -> hd b1 b2)
+            |> Seq.sum
