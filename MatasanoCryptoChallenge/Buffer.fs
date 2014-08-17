@@ -21,3 +21,16 @@
                 yield Array.init size (fun j -> arr.[j])
                 i := 0
           }
+
+    let rec transpose skip cs =
+        let skipIf n s =
+            s
+            |> Seq.mapi (fun i elem -> i, elem)
+            |> Seq.choose (fun (i, elem) -> if i >= n then Some(elem) else None)
+
+        seq {
+            yield Seq.head cs
+            let rest = (skipIf skip cs)
+            if not (Seq.isEmpty rest) then
+                yield! transpose skip  rest
+        }

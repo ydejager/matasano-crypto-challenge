@@ -83,9 +83,17 @@ let ``Challenge 6``() =
     let data = lines |> Seq.map base64StringToBytes |> Seq.concat |> Array.ofSeq
     data.Length |> should greaterThan 0
 
-    let keyLen = Crack.guesKeyLength 40 2 2 data
+    let keyLen = Crack.guesKeyLength 40 5 4 data
     printfn "Probable key length: %i" keyLen
 
-    let ((txt, score), key) = Crack.crackXoredText keyLen data
-
-    printf "score %i, key: %A, text: %s" score key (String.Concat txt)
+    let parts = seq {    
+        for n in [1 .. keyLen] do        
+            let (_, key) = Crack.crackXoredText 1 (transpose n (Seq.take 100 data))
+            let keyByte = Seq.head key
+            printfn "Key[%i]: %i " n keyByte
+            yield keyByte
+    }
+    let key = Array.ofSeq parts
+    let decrypted = xor key data
+    let outputAscii = (bytesToAscii decrypted) |> Array.ofSeq
+    printf "text: %s" (String.Concat outputAscii)
