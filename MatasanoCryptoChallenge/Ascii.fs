@@ -5,7 +5,7 @@
     let asciiToBytes (cs: char seq) =
         cs |> Seq.map byte
 
-    let textScorer cs =
+    let textScorer (cs: char seq) =
         let scoreChar c =
             match c with
             | c when c >= 'a' && c <= 'z' -> 4

@@ -35,9 +35,10 @@ let ``Challenge 3``() =
 
     inputBytes.Length * 2 |> should equal input.Length
 
-    let (bestChars, score) = Crack.crackXoredText inputBytes
+    let ((bestChars, score), key) = Crack.crackXoredText 1 inputBytes
     let s = String.Concat(bestChars)
-    printfn "Best bet(score %i): %s" score s
+    printf "Best bet(score %i, key: %A) %s" score key s
+    printfn ""
 
 [<Test>]
 let ``Challenge 4``() =
@@ -47,15 +48,16 @@ let ``Challenge 4``() =
     let bestLines = 
         lines
             |> Seq.map hexStringToBytes
-            |> Seq.map Crack.crackXoredText
-            |> Seq.map (fun (c, s) -> (String.Concat c, s))
-            |> Seq.where (fun (c, s) -> s > 100)
-            |> Seq.sortBy (fun (c, s) -> -s)
+            |> Seq.map (fun (bs: byte list) -> Crack.crackXoredText 1 bs)
+            |> Seq.map (fun ((c, s), key) -> (String.Concat c, s), key)
+            |> Seq.where (fun ((_, s), _) -> s > 100)
+            |> Seq.sortBy (fun ((_, s), _) -> -s)
             |> List.ofSeq
    
     bestLines.Length |> should greaterThan 0
 
-    printfn "Best bet(score %i): %s" (snd bestLines.[0]) (fst bestLines.[0])
+    let ((line, score), key) = bestLines.[0]
+    printfn "Best bet(score %i, key: %A): %s" score key line
 
     
 [<Test>]
@@ -74,7 +76,6 @@ let ``Challenge 5``() =
     decrypted |> should equal input
 
 
-
 [<Test>]
 let ``Challenge 6``() =
     let lines = IO.File.ReadAllLines("6.txt")
@@ -82,4 +83,9 @@ let ``Challenge 6``() =
     let data = lines |> Seq.map base64StringToBytes |> Seq.concat |> Array.ofSeq
     data.Length |> should greaterThan 0
 
-    failwith "Incomplete"
+    // TODO: Guess length with hamming distance
+    let len = 1
+
+    let ((txt, score), key) = Crack.crackXoredText len data
+
+    printf "score %i, key: %A, text: %s" score key (String.Concat txt)
