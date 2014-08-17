@@ -47,6 +47,7 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buffer.fs" />
     <Compile Include="Hex.fs" />
     <Compile Include="Base64.fs" />
     <Compile Include="Xor.fs" />
