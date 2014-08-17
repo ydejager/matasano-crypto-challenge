@@ -41,3 +41,39 @@
         Seq.zip bs1 bs2
             |> Seq.map (fun (b1, b2) -> hd b1 b2)
             |> Seq.sum
+
+    let guesKeyLength max depth sampleSize (data: byte seq) =
+        let avgDistance keyLength sampleSize =
+            // divide into chunks of equal length determined by the supplied keyLength
+            let chunks = Buffer.batch keyLength data
+
+            // Create 'pairs' of the chunks by windowing over them
+            let chunkGroups = Seq.windowed depth chunks
+
+            let rec distances (sq: byte[] seq) =
+                seq {
+                    let l = Seq.head sq
+                    let rest = Seq.skip 1 sq
+                    if not (Seq.isEmpty rest) then
+                        let r = Seq.head rest
+
+                        yield (hammingDist l r) / l.Length
+                        yield! distances rest
+                }
+
+            let chunkGroupSamples = chunkGroups |> Seq.take sampleSize
+            let chunkGroupDistances = chunkGroupSamples |> Seq.map (fun chunkGroup -> distances chunkGroup)
+            let chunkGroupAvgDistance = chunkGroupDistances |> Seq.map (fun ds -> Seq.sum ds / depth)
+            (chunkGroupAvgDistance |> Seq.sum) / sampleSize
+            
+        let dists = seq {
+            for keyLen in [1..max] do 
+                yield (keyLen, avgDistance keyLen sampleSize)
+        }
+
+        // return lowest dist
+        dists 
+            |> Seq.sortBy (fun (_, dist) -> dist)
+            |> Seq.map fst
+            |> Seq.head
+        

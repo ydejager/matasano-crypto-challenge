@@ -83,9 +83,9 @@ let ``Challenge 6``() =
     let data = lines |> Seq.map base64StringToBytes |> Seq.concat |> Array.ofSeq
     data.Length |> should greaterThan 0
 
-    // TODO: Guess length with hamming distance
-    let len = 1
+    let keyLen = Crack.guesKeyLength 40 2 2 data
+    printfn "Probable key length: %i" keyLen
 
-    let ((txt, score), key) = Crack.crackXoredText len data
+    let ((txt, score), key) = Crack.crackXoredText keyLen data
 
     printf "score %i, key: %A, text: %s" score key (String.Concat txt)
