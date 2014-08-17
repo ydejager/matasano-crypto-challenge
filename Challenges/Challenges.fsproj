@@ -75,6 +75,7 @@
   </Target>
   <ItemGroup>
     <Compile Include="NUnitRunner.fs" />
+    <Compile Include="Base64Tests.fs" />
     <Compile Include="Challenges.fs" />
     <None Include="Script.fsx" />
     <None Include="packages.config" />
@@ -82,6 +83,10 @@
     <Content Include="4.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="6.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="AsciiTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FsCheck">

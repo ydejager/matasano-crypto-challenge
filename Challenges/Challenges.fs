@@ -72,3 +72,14 @@ let ``Challenge 5``() =
     let decrypted = decryptString key encrypted
     printfn "Decrypted: %s" decrypted
     decrypted |> should equal input
+
+
+
+[<Test>]
+let ``Challenge 6``() =
+    let lines = IO.File.ReadAllLines("6.txt")
+
+    let data = lines |> Seq.map base64StringToBytes |> Seq.concat |> Array.ofSeq
+    data.Length |> should greaterThan 0
+
+    failwith "Incomplete"
