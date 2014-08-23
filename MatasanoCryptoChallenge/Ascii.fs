@@ -11,7 +11,11 @@
             | c when c >= 'a' && c <= 'z' -> 4
             | ' ' -> 3
             | c when c >= 'A' && c <= 'Z' -> 2
+            | ' ' -> 2
+            | '.' -> 2
             | '\'' -> 1
+            | '!' -> 1
+            | '!' -> 1
             | _ -> 0
-        (cs, Seq.fold (fun acc c -> acc + (scoreChar c)) 0 cs)
+        Seq.fold (fun acc c -> acc + (scoreChar c)) 0 cs
 

@@ -32,5 +32,5 @@
             yield Seq.head cs
             let rest = (skipIf skip cs)
             if not (Seq.isEmpty rest) then
-                yield! transpose skip  rest
+                yield! transpose skip rest
         }

@@ -15,17 +15,17 @@
             }
         g l
 
-    let crack (crypter: byte seq -> byte seq -> byte seq) (scorer: char seq -> (char seq * int)) (maxkeylen: int) (input: byte seq) =
-        keys maxkeylen
+    let crack (crypter: byte seq -> byte seq -> byte seq) (scorer: char seq -> int) (keylen: int) (input: byte seq) =
+        keys keylen
             |> Seq.map (fun key -> crypter key input, key)
             |> Seq.map (fun (bs, key) -> bytesToAscii bs, key)
-            |> Seq.map (fun (cs, key) -> scorer cs, key)
+            |> Seq.map (fun (cs, key) -> (cs, scorer cs), key)
             |> Seq.sortBy (fun ((_, i), _) -> -i)
-            |> Seq.head
+            //|> Seq.head
             
-    let crackText (crypter: byte seq -> byte seq -> byte seq) (maxkeylen: int) (input: byte seq) = crack crypter textScorer maxkeylen input
+    let crackText (crypter: byte seq -> byte seq -> byte seq) (keylen: int) (input: byte seq) = crack crypter textScorer keylen input
 
-    let crackXoredText (maxkeylen: int) (input: byte seq) = crackText xor maxkeylen input
+    let crackXoredText (keylen: int) (input: byte seq) = crackText xor keylen input
 
     let hammingDist (bs1: byte seq) (bs2: byte seq) =
         let countBits (b: byte) =
@@ -42,33 +42,33 @@
             |> Seq.map (fun (b1, b2) -> hd b1 b2)
             |> Seq.sum
 
-    let guesKeyLength max depth sampleSize (data: byte seq) =
-        let avgDistance keyLength sampleSize =
-            // divide into chunks of equal length determined by the supplied keyLength
-            let chunks = Buffer.batch keyLength data
+    let rec avgHammingDistances (sq: byte[] seq) =
+        seq {
+            let l = Seq.head sq
+            let rest = Seq.skip 1 sq
+            if not (Seq.isEmpty rest) then
+                let r = Seq.head rest
 
-            // Create 'pairs' of the chunks by windowing over them
-            let chunkGroups = Seq.windowed depth chunks
+                yield (hammingDist l r) / l.Length
+                yield! avgHammingDistances rest
+        }
 
-            let rec distances (sq: byte[] seq) =
-                seq {
-                    let l = Seq.head sq
-                    let rest = Seq.skip 1 sq
-                    if not (Seq.isEmpty rest) then
-                        let r = Seq.head rest
+    let avgSampledHammingDistances chunkSize groupCount sampleCount data =
+        // divide into chunks of equal length determined by the supplied keyLength
+        let chunks = Buffer.batch chunkSize data
 
-                        yield (hammingDist l r) / l.Length
-                        yield! distances rest
-                }
+        // Create 'groups' of the chunks by batching over them
+        let chunkGroups = Buffer.batch groupCount chunks
 
-            let chunkGroupSamples = chunkGroups |> Seq.take sampleSize
-            let chunkGroupDistances = chunkGroupSamples |> Seq.map (fun chunkGroup -> distances chunkGroup)
-            let chunkGroupAvgDistance = chunkGroupDistances |> Seq.map (fun ds -> Seq.sum ds / depth)
-            (chunkGroupAvgDistance |> Seq.sum) / sampleSize
-            
+        let chunkGroupSamples = chunkGroups |> Seq.take sampleCount |> Array.ofSeq
+        let chunkGroupDistances = chunkGroupSamples |> Seq.map (fun chunkGroup -> avgHammingDistances chunkGroup) |> Array.ofSeq
+        let chunkGroupAvgDistance = chunkGroupDistances |> Seq.map (fun ds -> Seq.sum ds / (groupCount - 1)) |> Array.ofSeq
+        (chunkGroupAvgDistance |> Seq.sum) / sampleCount
+
+    let guesKeyLength max depth sampleSize (data: byte seq) =            
         let dists = seq {
             for keyLen in [1..max] do 
-                yield (keyLen, avgDistance keyLen sampleSize)
+                yield (keyLen, avgSampledHammingDistances keyLen depth sampleSize data)
         }
 
         // return lowest dist
@@ -76,4 +76,13 @@
             |> Seq.sortBy (fun (_, dist) -> dist)
             |> Seq.map fst
             |> Seq.head
-        
+    
+    let guessRepeatedXorKey keyLen data =
+        let parts = seq {    
+            for n in [0 .. keyLen - 1] do        
+                let (_, key) = Seq.head (crackXoredText 1 (Buffer.transpose keyLen (Seq.skip n data)))
+                let keyByte = Seq.head key
+                printf "Key[%A]: %A " n keyByte
+                yield keyByte
+        }
+        Array.ofSeq parts
