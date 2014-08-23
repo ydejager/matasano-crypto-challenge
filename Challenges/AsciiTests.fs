@@ -23,13 +23,13 @@ let ``Ascii scorer``() =
 
 
 [<Test>]
-let ``Ascii scorer 2``() =
+let ``Ascii scorer english``() =
     let goodText  = "This is the text that will be xor encrypted!!!!!!!"
-    let badText =   "Uhir ir tie uexu tiat!wiml ce yor!enbryqtee!! !! !"
+    let equalText =   "Uhir ir tie uexu tiat!wiml ce yor!enbryqtee!! !! !"
 
-    let badScore = Ascii.textScorer badText
     let goodScore = Ascii.textScorer goodText
+    let equalScore = Ascii.textScorer equalText
 
-    goodScore |> should greaterThan badScore
+    goodScore |> should greaterThan equalScore
 
     
