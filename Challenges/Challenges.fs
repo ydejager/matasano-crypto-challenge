@@ -86,8 +86,11 @@ let ``Challenge 6``() =
     let keyLen = Crack.guesKeyLength 10 2 5 data
     printfn "Probable key length: %i" keyLen
 
-    let (key, _) = Crack.guessRepeatedXorKey keyLen (Seq.take 200 data)
+    let guesses =  Crack.guessRepeatedXorKeys keyLen 3 (Seq.take 200 data)
     
-    let text = xor key data |> bytesToAscii
+    guesses
+        |> Seq.iter (fun (guessedKey, (text, score)) -> printfn "Score %i, key%A: %s" score guessedKey text)
+    
+    //let text = xor key data |> bytesToAscii
 
-    printf "text: %s" (String.Concat text)
+    //printf "text: %s" (String.Concat text)

@@ -1,4 +1,11 @@
 ﻿module Buffer
+    let cons (x,xs) = x::xs
+    let product2 xs ys = seq { for x in xs do for y in ys do yield x,y }
+    let rec productN xs = 
+        match xs with
+        | []        -> seq { yield [] }
+        | xs :: xss -> product2 xs (productN xss) |> Seq.map cons
+
     let zipseq (sequencelist:list<seq<'a>>) = 
         let enumerators = sequencelist |> List.map (fun (s:seq<'a>) -> (s.GetEnumerator()))
         seq {

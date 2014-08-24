@@ -92,11 +92,12 @@
             for n in [0 .. keyLen - 1] do
                 yield (guessNthByte n)
         }
-
+        // TODO: combine using cartesion product
         let combined =
             guesses
                 |> List.ofSeq
-                |> Buffer.zipseq 
+                //|> Buffer.zipseq 
+                |> Buffer.productN
                 |> Seq.map (fun es -> Seq.fold (fun (l, total) (key, score) -> (List.append l [key], total + score)) ([], 0) es)
                 //|> Seq.map (fun (key, score) -> (List.rev key, score))
 

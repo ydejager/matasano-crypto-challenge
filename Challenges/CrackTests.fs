@@ -139,18 +139,19 @@ let ``Crack xored singlebyte key``() =
 
 [<Test>]
 let ``Crack xored multibyte key``() =
-    let original = asciiToBytes "This is the text that will be xor encrypted!!!!!!!"
+    let originalText = "This is the text that will be xor encrypted!!!!!!!"
+    let original = asciiToBytes  originalText
     //let key = [|23uy;01uy;143uy;97uy;201uy|]
     let key = [|23uy;45uy|]
     let encrypted = Xor.xor key original
 
-    let guesses = guessRepeatedXorKeys key.Length 50 encrypted
+    let guesses = guessRepeatedXorKeys key.Length 2 encrypted
 
     guesses
         |> Seq.iter (fun (guessedKey, (text, score)) -> printfn "Score %i, key%A: %s" score guessedKey text)
     
     guesses
-        |> Seq.exists (fun (_, (text, _)) -> text.Equals(original))
+        |> Seq.exists (fun (_, (text, _)) -> String.Equals(text, originalText))
         |> should equal true
     //guessedKey |> should equal key
 
