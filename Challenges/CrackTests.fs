@@ -127,13 +127,13 @@ let ``Guess key length with depth 2 and samplesize 2``() =
 [<Test>]
 let ``Crack xored singlebyte key``() =
     let original = asciiToBytes "This is the text that will be xor encrypted!!!!!!!"
-    let key = 23uy
-    let encrypted = Xor.xor [key] original
+    let key = [23uy]
+    let encrypted = Xor.xor key original
 
-    let guessedKey = Seq.head (guessRepeatedXorKey 1 encrypted)
+    let (guessedKey, score) = guessRepeatedXorKey 1 encrypted
+    let text = Xor.xor guessedKey encrypted |> bytesToAscii
 
-    let decrypted = Xor.xor [guessedKey] encrypted
-    printfn "%s" (String.Concat (bytesToAscii decrypted))
+    printfn "%s" (String.Concat text)
     guessedKey |> should equal key
 
 
@@ -141,14 +141,18 @@ let ``Crack xored singlebyte key``() =
 let ``Crack xored multibyte key``() =
     let original = asciiToBytes "This is the text that will be xor encrypted!!!!!!!"
     //let key = [|23uy;01uy;143uy;97uy;201uy|]
-    let key = [|23uy;45uy;201uy|]
+    let key = [|23uy;45uy|]
     let encrypted = Xor.xor key original
 
-    let guessedKey = guessRepeatedXorKey key.Length encrypted
+    let guesses = guessRepeatedXorKeys key.Length 50 encrypted
 
-    let decrypted = Xor.xor guessedKey encrypted
-    printfn "%s" (String.Concat (bytesToAscii decrypted))
-    guessedKey |> should equal key
+    guesses
+        |> Seq.iter (fun (guessedKey, (text, score)) -> printfn "Score %i, key%A: %s" score guessedKey text)
+    
+    guesses
+        |> Seq.exists (fun (_, (text, _)) -> text.Equals(original))
+        |> should equal true
+    //guessedKey |> should equal key
 
 [<Test>]
 let ``keys 1``() =

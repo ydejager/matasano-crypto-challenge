@@ -1,6 +1,7 @@
 ﻿module Crack
     open Ascii
     open Xor
+    open System
 
     let keys l =    
         let prefixbyte suffix =
@@ -23,8 +24,10 @@
             |> Seq.sortBy (fun ((_, i), _) -> -i)
             //|> Seq.head
             
+    let crackChars (crypter: byte seq -> byte seq -> byte seq) (keylen: int) (input: byte seq) = crack crypter charScorer keylen input
     let crackText (crypter: byte seq -> byte seq -> byte seq) (keylen: int) (input: byte seq) = crack crypter textScorer keylen input
 
+    let crackXoredChars (keylen: int) (input: byte seq) = crackChars xor keylen input
     let crackXoredText (keylen: int) (input: byte seq) = crackText xor keylen input
 
     let hammingDist (bs1: byte seq) (bs2: byte seq) =
@@ -77,12 +80,32 @@
             |> Seq.map fst
             |> Seq.head
     
-    let guessRepeatedXorKey keyLen data =
-        let parts = seq {    
-            for n in [0 .. keyLen - 1] do        
-                let (_, key) = Seq.head (crackXoredText 1 (Buffer.transpose keyLen (Seq.skip n data)))
-                let keyByte = Seq.head key
-                printf "Key[%A]: %A " n keyByte
-                yield keyByte
+
+    let guessRepeatedXorKeys (keyLen: int) (topN: int) (data: byte seq) =
+        let guessNthByte n =        
+            Seq.skip n data // start at n bytes
+                |> Buffer.transpose keyLen // take each nth byte
+                |> crackXoredChars 1         // attempt to crack the series of nth bytes with a 1-byte key
+                |> Seq.take topN
+                |> Seq.map (fun ((_, score), key) -> (key.[0], score))
+        let guesses = seq {    
+            for n in [0 .. keyLen - 1] do
+                yield (guessNthByte n)
         }
-        Array.ofSeq parts
+
+        let combined =
+            guesses
+                |> List.ofSeq
+                |> Buffer.zipseq 
+                |> Seq.map (fun es -> Seq.fold (fun (l, total) (key, score) -> (List.append l [key], total + score)) ([], 0) es)
+                //|> Seq.map (fun (key, score) -> (List.rev key, score))
+
+        combined
+            |> Seq.map (fun (key, score) -> 
+                    let decrypted = xor key data |> bytesToAscii
+                    (key, (String.Concat decrypted, score + (Ascii.textScorer decrypted)))
+                )
+            |> Seq.sortBy (fun (key, (text, score)) -> -score)
+
+    let guessRepeatedXorKey keyLen data =
+        Seq.head (guessRepeatedXorKeys keyLen 1 data)

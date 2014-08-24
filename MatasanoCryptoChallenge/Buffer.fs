@@ -1,4 +1,12 @@
 ﻿module Buffer
+    let zipseq (sequencelist:list<seq<'a>>) = 
+        let enumerators = sequencelist |> List.map (fun (s:seq<'a>) -> (s.GetEnumerator()))
+        seq {
+            let hasNext() = enumerators |> List.exists (fun e -> not (e.MoveNext())) |> not
+            while hasNext() do
+                yield enumerators |> List.map (fun e -> e.Current)
+        }
+
     let ring items =
         let rec iter items' =
             seq {

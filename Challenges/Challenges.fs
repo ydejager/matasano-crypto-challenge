@@ -35,7 +35,7 @@ let ``Challenge 3``() =
 
     inputBytes.Length * 2 |> should equal input.Length
 
-    let ((bestChars, score), key) = Seq.head (Crack.crackXoredText 1 inputBytes)
+    let ((bestChars, score), key) = Seq.head (Crack.crackXoredChars 1 inputBytes)
     let s = String.Concat(bestChars)
     printf "Best bet(score %i, key: %A) %s" score key s
     printfn ""
@@ -48,7 +48,7 @@ let ``Challenge 4``() =
     let bestLines = 
         lines
             |> Seq.map hexStringToBytes
-            |> Seq.map (fun (bs: byte list) -> Seq.head (Crack.crackXoredText 1 bs))
+            |> Seq.map (fun (bs: byte list) -> Seq.head (Crack.crackXoredChars 1 bs))
             |> Seq.map (fun ((c, s), key) -> (String.Concat c, s), key)
             |> Seq.where (fun ((_, s), _) -> s > 100)
             |> Seq.sortBy (fun ((_, s), _) -> -s)
@@ -86,8 +86,8 @@ let ``Challenge 6``() =
     let keyLen = Crack.guesKeyLength 10 2 5 data
     printfn "Probable key length: %i" keyLen
 
+    let (key, _) = Crack.guessRepeatedXorKey keyLen (Seq.take 200 data)
+    
+    let text = xor key data |> bytesToAscii
 
-    let key = Crack.guessRepeatedXorKey keyLen (Seq.take 200 data)
-    let decrypted = xor key data
-    let outputAscii = (bytesToAscii decrypted) |> Array.ofSeq
-    printf "text: %s" (String.Concat outputAscii)
+    printf "text: %s" (String.Concat text)
